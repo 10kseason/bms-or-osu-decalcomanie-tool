@@ -1,5 +1,9 @@
 # BMS/osu 5K to 10K Decalcomanie Tool
 
+Development: CircusGalop & 윾이 & Codex
+
+Korean documentation: [README_KO.md](README_KO.md)
+
 Double-click `dist\BMS_Decalcomanie_Tool.exe`, `run_decalcomanie_tool.bat`, or `BMS_Decalcomanie_Tool.pyw`, add BMS or osu!mania files, then click **Convert to 10K decalcomanie**.
 
 The original files are not overwritten. By default, converted files are written beside each source file so existing relative BMS `#WAVxx` paths and osu `AudioFilename` paths still work. If you choose another output folder, make sure the referenced sound files are available from that folder too.
