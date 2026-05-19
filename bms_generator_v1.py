@@ -905,7 +905,7 @@ def make_generator_v1_osu_bytes(options: GeneratorV1Options) -> tuple[bytes, int
     )
 
 
-def make_generator_v1_osu_timestamp_clipboard_bytes(
+def make_generator_v1_osu_clipboard_bytes(
     options: GeneratorV1Options,
     time_offset_ms: int = 0,
 ) -> tuple[bytes, int, int, int, int, int, int, int, int, int, int]:
@@ -914,15 +914,13 @@ def make_generator_v1_osu_timestamp_clipboard_bytes(
         raise ValueError("BPM must be greater than 0")
     offset = int(time_offset_ms)
     if offset < 0:
-        raise ValueError("osu timestamp start time must be 0 or greater")
+        raise ValueError("osu clipboard start time must be 0 or greater")
     pattern = make_generator_v1_note_pattern(options)
     hit_objects, _chart_end_ms = base.build_random_osu_hitobject_lines(pattern, options, offset)
     if not hit_objects:
         raise ValueError("Generator v1 produced no osu hit objects")
-    first_time = hit_objects[0][0]
-    timestamp_objects = ",".join(f"{time_ms}|{lane}" for time_ms, lane, _hit_object in hit_objects)
     return (
-        f"{base.osu_timestamp_text(first_time)} ({timestamp_objects}) -".encode("ascii"),
+        b"".join(hit_object for _time_ms, _lane, hit_object in hit_objects),
         pattern.visible_notes,
         pattern.long_note_starts,
         pattern.long_note_ends,
@@ -1216,7 +1214,7 @@ def launch_gui() -> None:
                 other_key_patterns,
                 sparse_adjustments,
                 dense_adjustments,
-            ) = make_generator_v1_osu_timestamp_clipboard_bytes(options, start_time_ms)
+            ) = make_generator_v1_osu_clipboard_bytes(options, start_time_ms)
         except Exception as exc:  # noqa: BLE001 - GUI should report validation errors.
             messagebox.showerror("Generator v1 clipboard failed", str(exc), parent=root)
             return
@@ -1225,13 +1223,13 @@ def launch_gui() -> None:
         root.clipboard_append(clipboard_bytes.decode("utf-8", errors="replace"))
         root.update()
         append_log(
-            f"OK clipboard timestamp text "
+            f"OK clipboard HitObject rows "
             f"(start {start_time_ms} ms, single {visible_notes}, LN {long_starts}/{long_ends}, "
             f"stairs {stair_patterns}, chords {chord_patterns}, jacks {jack_patterns}, "
             f"LN-patterns {long_note_patterns}, other-key {other_key_patterns}, "
             f"sparse {sparse_adjustments}, dense {dense_adjustments})"
         )
-        messagebox.showinfo("Generator v1 clipboard ready", "Copied timestamp text to clipboard.", parent=root)
+        messagebox.showinfo("Generator v1 clipboard ready", "Copied HitObject rows to clipboard.", parent=root)
 
     ttk.Label(
         frame,
@@ -1246,7 +1244,7 @@ def launch_gui() -> None:
         text="Diff calc lowers dense sections and fills sparse sections using recent notes/tick.",
     ).grid(row=27, column=0, columnspan=2, sticky=tk.W, pady=(0, 8))
     ttk.Button(frame, text="Generate", command=generate).grid(row=28, column=0, columnspan=2, sticky=tk.EW)
-    ttk.Button(frame, text="Generate timestamp clipboard", command=generate_clipboard).grid(
+    ttk.Button(frame, text="Generate HitObject clipboard", command=generate_clipboard).grid(
         row=29,
         column=0,
         columnspan=2,

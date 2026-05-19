@@ -8,7 +8,7 @@ Double-click `dist\BMS_Decalcomanie_Tool.exe`, `run_decalcomanie_tool.bat`, or `
 
 The original files are not overwritten. By default, converted files are written beside each source file so existing relative BMS `#WAVxx` paths and osu `AudioFilename` paths still work. If you choose another output folder, make sure the referenced sound files are available from that folder too.
 
-The GUI also has **Copy selected osu decal notes to clipboard** for selected `.osu` files. It copies only mirrored HitObject rows. **Open random chart generator** creates direct BMS or osu!mania files, copies generated osu timestamp text, or inserts a generated section into an existing `.osu` file. BMS output uses visible lanes in order from `11-15` then `21-25`, with long-note lanes `51-55` then `61-65`; osu output uses `Mode: 3` and sets `CircleSize` to the key count.
+The GUI also has **Copy selected osu decal notes to clipboard** for selected `.osu` files. It copies only mirrored HitObject rows. **Open random chart generator** creates direct BMS or osu!mania files, copies generated osu!mania HitObject rows, or inserts a generated section into an existing `.osu` file. BMS output uses visible lanes in order from `11-15` then `21-25`, with long-note lanes `51-55` then `61-65`; osu output uses `Mode: 3` and sets `CircleSize` to the key count.
 
 ## BMS conversion rule
 
@@ -68,9 +68,9 @@ The generator checks each selected key lane at a fixed beat interval and can wri
 
 `Beat interval` is in beats and must divide one 4-beat measure exactly, such as `1`, `0.5`, `0.25`, or `1/8`. The generator writes a silent WAV named `_random_note_silence.wav` beside the output if it does not already exist. BMS uses it as a key-sound; osu uses it as `AudioFilename`.
 
-Use **Generate random clipboard** when you want osu timestamp text for manual text editing. The click prompts for a start ms and copies text like `01:07:061 (67061|3,67061|2) -`.
+Use **Generate random clipboard** when you want raw `.osu` HitObject rows for manual text editing under `[HitObjects]`. `Clipboard/file start time (ms)` offsets the generated section before copying.
 
-The osu! client does not reliably paste raw text as editor objects. For editor-section workflows, choose a target `.osu` file and click **Apply random section to osu file**. It inserts the generated rows at `Clipboard/file start time (ms)`, sorts the `[HitObjects]` section by time, checks that `CircleSize` matches `Key count`, and writes a one-time `.osu.bak` backup beside the target file.
+The osu! client does not reliably paste raw HitObject text as editor objects. For editor-section workflows, choose a target `.osu` file and click **Apply random section to osu file**. It inserts the generated rows at `Clipboard/file start time (ms)`, sorts the `[HitObjects]` section by time, checks that `CircleSize` matches `Key count`, and writes a one-time `.osu.bak` backup beside the target file.
 
 ```bat
 python bms_decalcomanie_converter.py --random-output "path\to\random_10k.bms" --bpm 150 --beat-interval 0.25 --measures 16

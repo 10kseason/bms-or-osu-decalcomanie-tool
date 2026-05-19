@@ -8,8 +8,8 @@ from bms_generator_v1 import (
     generate_generator_v1_chart_file,
     make_generator_v1_bms_bytes,
     make_generator_v1_note_pattern,
+    make_generator_v1_osu_clipboard_bytes,
     make_generator_v1_osu_bytes,
-    make_generator_v1_osu_timestamp_clipboard_bytes,
 )
 
 
@@ -305,8 +305,8 @@ class GeneratorV1Tests(unittest.TestCase):
         times = [int(line.split(b",")[2]) for line in hitobject_lines]
         self.assertEqual(times, [0, 0, 500, 500])
 
-    def test_osu_timestamp_clipboard_uses_start_offset(self) -> None:
-        clipboard, visible_notes, long_starts, long_ends, stair_patterns, *_rest = make_generator_v1_osu_timestamp_clipboard_bytes(
+    def test_osu_clipboard_uses_hitobject_rows_with_start_offset(self) -> None:
+        clipboard, visible_notes, long_starts, long_ends, stair_patterns, *_rest = make_generator_v1_osu_clipboard_bytes(
             GeneratorV1Options(
                 lanes=4,
                 generation_count=2,
@@ -322,7 +322,13 @@ class GeneratorV1Tests(unittest.TestCase):
         self.assertEqual(long_starts, 0)
         self.assertEqual(long_ends, 0)
         self.assertEqual(stair_patterns, 1)
-        self.assertEqual(clipboard, b"01:07:061 (67061|0,67061|1,67561|2,67561|3) -")
+        self.assertEqual(
+            clipboard,
+            b"64,192,67061,1,0,0:0:0:0:\r\n"
+            b"192,192,67061,1,0,0:0:0:0:\r\n"
+            b"320,192,67561,1,0,0:0:0:0:\r\n"
+            b"448,192,67561,1,0,0:0:0:0:\r\n",
+        )
 
     def test_chord_density_pattern_places_double_triple_or_quad(self) -> None:
         pattern = make_generator_v1_note_pattern(

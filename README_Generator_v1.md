@@ -20,7 +20,7 @@ BMS key extension command follows the selected key count: `4K-8K` outputs `#4K` 
 - If long notes are occupying too many lanes, Generator v1 forces enough `2b` keeps into `1b` ends so the next generated position has room for the minimum.
 - If `2a` long-note starts would occupy too many lanes for the next generated position, Generator v1 randomly converts the excess `2a` starts into `1a` single notes.
 - Special Generator v1 pattern ticks, such as double-stairs, chords, jacks, long-note patterns, and other-key patterns, are filled up to the same minimum when needed.
-- **Generate timestamp clipboard** prompts for a start ms and copies osu timestamp text such as `01:07:061 (67061|3,67061|2) -`, which can be pasted into a text file.
+- **Generate HitObject clipboard** prompts for a start ms and copies raw `.osu` HitObject rows for manual text editing under `[HitObjects]`.
 
 ## Added Pattern
 

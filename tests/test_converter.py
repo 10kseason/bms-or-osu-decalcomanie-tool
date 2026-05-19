@@ -18,7 +18,6 @@ from bms_decalcomanie_converter import (
     make_random_note_pattern,
     make_random_osu_bytes,
     make_random_osu_clipboard_bytes,
-    make_random_osu_timestamp_clipboard_bytes,
 )
 
 
@@ -190,27 +189,6 @@ class ConverterTests(unittest.TestCase):
         self.assertEqual(long_ends, 0)
         self.assertIn(b"64,192,1234,1,0,0:0:0:0:\r\n", clipboard)
         self.assertIn(b"448,192,1734,1,0,0:0:0:0:\r\n", clipboard)
-
-    def test_random_osu_timestamp_clipboard_can_start_at_offset(self) -> None:
-        clipboard, visible_notes, long_starts, long_ends = make_random_osu_timestamp_clipboard_bytes(
-            RandomNoteOptions(
-                beat_interval="1",
-                generation_count=2,
-                lanes=4,
-                empty_single_weight=100,
-                empty_long_start_weight=0,
-                empty_rest_weight=0,
-            ),
-            67061,
-        )
-
-        self.assertEqual(visible_notes, 8)
-        self.assertEqual(long_starts, 0)
-        self.assertEqual(long_ends, 0)
-        self.assertEqual(
-            clipboard,
-            b"01:07:061 (67061|0,67061|1,67061|2,67061|3,67561|0,67561|1,67561|2,67561|3) -",
-        )
 
     def test_insert_osu_hitobjects_rejects_key_count_mismatch(self) -> None:
         raw = (

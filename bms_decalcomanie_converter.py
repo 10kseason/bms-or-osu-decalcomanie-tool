@@ -644,40 +644,6 @@ def make_random_osu_clipboard_bytes(options: RandomNoteOptions, time_offset_ms: 
     )
 
 
-def osu_timestamp_text(time_ms: int) -> str:
-    timestamp = int(time_ms)
-    if timestamp < 0:
-        raise ValueError("osu timestamp must be 0 or greater")
-    minutes = timestamp // 60000
-    seconds = (timestamp // 1000) % 60
-    milliseconds = timestamp % 1000
-    return f"{minutes:02d}:{seconds:02d}:{milliseconds:03d}"
-
-
-def make_random_osu_timestamp_clipboard_bytes(
-    options: RandomNoteOptions,
-    time_offset_ms: int = 0,
-) -> tuple[bytes, int, int, int]:
-    bpm = float(options.bpm)
-    if not math.isfinite(bpm) or bpm <= 0:
-        raise ValueError("BPM must be greater than 0")
-    offset = int(time_offset_ms)
-    if offset < 0:
-        raise ValueError("osu clipboard start time must be 0 or greater")
-    pattern = make_random_note_pattern(options)
-    hit_objects, _chart_end_ms = build_random_osu_hitobject_lines(pattern, options, offset)
-    if not hit_objects:
-        raise ValueError("random generation produced no osu hit objects")
-    first_time = hit_objects[0][0]
-    timestamp_objects = ",".join(f"{time_ms}|{lane}" for time_ms, lane, _hit_object in hit_objects)
-    return (
-        f"{osu_timestamp_text(first_time)} ({timestamp_objects}) -".encode("ascii"),
-        pattern.visible_notes,
-        pattern.long_note_starts,
-        pattern.long_note_ends,
-    )
-
-
 def osu_hitobject_time(line: bytes) -> int | None:
     parts = body_without_newline(line).split(b",", 4)
     if len(parts) < 3:
@@ -1203,7 +1169,7 @@ def iter_bms_files(paths: Iterable[Path]) -> list[Path]:
 
 def launch_gui() -> None:
     import tkinter as tk
-    from tkinter import filedialog, messagebox, simpledialog, ttk
+    from tkinter import filedialog, messagebox, ttk
 
     root = tk.Tk()
     root.title("BMS/osu 5K to 10K Decalcomanie Tool")
@@ -1507,24 +1473,8 @@ def launch_gui() -> None:
         def generate_random_clipboard() -> None:
             try:
                 options = build_random_options(False)
-                try:
-                    initial_start_time = random_start_time_ms()
-                except Exception:
-                    initial_start_time = 0
-                start_time_ms = simpledialog.askinteger(
-                    "Random clipboard start ms",
-                    "Start ms",
-                    parent=window,
-                    initialvalue=initial_start_time,
-                    minvalue=0,
-                )
-                if start_time_ms is None:
-                    return
-                start_time_var.set(str(start_time_ms))
-                clipboard_bytes, visible_notes, long_starts, long_ends = make_random_osu_timestamp_clipboard_bytes(
-                    options,
-                    start_time_ms,
-                )
+                start_time_ms = random_start_time_ms()
+                clipboard_bytes, visible_notes, long_starts, long_ends = make_random_osu_clipboard_bytes(options, start_time_ms)
             except Exception as exc:  # noqa: BLE001 - GUI should report validation errors.
                 messagebox.showerror("Random clipboard failed", str(exc), parent=window)
                 return
@@ -1534,7 +1484,7 @@ def launch_gui() -> None:
             window.clipboard_append(clipboard_text)
             window.update()
             append_log(
-                f"OK    random clipboard -> osu timestamp text "
+                f"OK    random clipboard -> osu HitObject rows "
                 f"(start {start_time_ms} ms, single {visible_notes}, LN {long_starts}/{long_ends})"
             )
             messagebox.showinfo(
@@ -1577,7 +1527,7 @@ def launch_gui() -> None:
 
         ttk.Label(
             content,
-            text="Creates files, copies osu timestamp text, or inserts generated rows into an existing osu!mania file.",
+            text="Creates files, copies HitObject rows, or inserts generated rows into an existing osu!mania file.",
         ).grid(row=16, column=0, columnspan=2, sticky=tk.W, pady=(8, 8))
         ttk.Button(content, text="Generate random chart", command=generate_random).grid(
             row=17,
